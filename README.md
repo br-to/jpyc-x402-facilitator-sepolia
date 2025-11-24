@@ -49,7 +49,6 @@ JPYCのEIP-3009を処理する[x402プロトコル](https://docs.cdp.coinbase.co
 │                                          │
 │  ┌────────────────────────────────────┐ │
 │  │  settleService.ts                  │ │
-│  │  - verifyServiceを呼び出し         │ │
 │  │  - transferWithAuthorization実行   │ │
 │  └────────────────────────────────────┘ │
 └──────────┬───────────────────────────────┘
@@ -76,9 +75,9 @@ JPYCのEIP-3009を処理する[x402プロトコル](https://docs.cdp.coinbase.co
    - 残高・nonce状態の確認
 
 2. **Settle**: 検証済みのauthorizationをブロックチェーン上で実行
-   - Verifyと同じ検証を実施
    - `transferWithAuthorization`関数を呼び出し
    - トランザクションハッシュを返却
+   - エラー（残高不足、nonce重複など）はスマートコントラクト側で検証されリバートされる
 
 
 
@@ -427,6 +426,51 @@ EIP-712は、構造化されたデータに署名するための標準です。�
   }
 }
 ```
+
+### 実装の選択: JPYC SDKを使わない理由
+
+このプロジェクトでは、JPYCの公式SDKを使用せず、**Viem**と**ABI定義**を直接使用して実装しています。
+
+**実際の経緯:**
+
+今まで開発でdevelopブランチのSDKを使っていたのですが、今回も使おうと思ったら呼び出し方が若干変わっていました。いちいち変えるの面倒で、安定したら使うようにしたいと考えていました。
+
+mainブランチもあるけど、Vercelのデプロイでこけたので、この方法（ViemとABI定義を直接使用）に落ち着きました。
+
+**このアプローチのメリット:**
+
+1. **デプロイの安定性**: Vercelなどのデプロイ環境で問題なく動作する
+2. **依存関係の最小化**: x402プロトコルに必要な機能（`transferWithAuthorization`、`authorizationState`、`balanceOf`）のみを使用
+3. **型安全性**: Viemの型システムを活用し、TypeScriptの型チェックを最大限に活用できる
+4. **透明性**: 使用している関数が明確で、コードレビューやデバッグが容易
+
+**実装例:**
+```typescript
+// src/jpycAbi.ts - 必要な関数のみをABIとして定義
+export const jpycAbi = [
+  {
+    name: "transferWithAuthorization",
+    // ... EIP-3009に必要なパラメータ
+  },
+  {
+    name: "authorizationState",
+    // ... nonceの状態確認用
+  },
+  {
+    name: "balanceOf",
+    // ... 残高確認用
+  },
+] as const;
+
+// src/common.ts - Viemでコントラクトインスタンスを作成
+export const jpycContract = getContract({
+  address: process.env.JPYC_CONTRACT_ADDRESS as `0x${string}`,
+  abi: jpycAbi,
+  client: { public: publicClient, wallet: walletClient },
+});
+```
+
+SDKが安定したら移行することも検討していますが、現時点ではこの実装で問題なく動作しています。
 
 ## 開発
 
