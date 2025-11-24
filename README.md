@@ -81,7 +81,28 @@ JPYCのEIP-3009を処理する[x402プロトコル](https://docs.cdp.coinbase.co
    - トランザクションハッシュを返却
 
 
-## RPCプロバイダーの選定
+
+## セットアップ
+
+### 前提条件
+
+- Polygon Mainnetへのアクセス権（Infura、Alchemyなど）
+- リレイヤー用の秘密鍵（ガス代を支払うアカウント）
+
+### JPYC（Polygon Mainnet）と POL を準備する
+
+Polygon Mainnet を利用するため、あらかじめ次の 2 種類のトークンを少額用意します。
+
+- **JPYC（Polygon Mainnet）**：実際の送金に使用
+- **POL（Gas 代）**：Facilitator がトランザクションを送信する際に必要
+
+どちらも少額で問題ありません。
+
+Polygon の JPYC は、公式の **[JPYC EX](https://jpyc.co.jp/)** から取得できます。
+
+取得後、Metamask の **スワップ機能** を使って一部を POL に交換すれば、ガス代の準備も完了です。
+
+### RPCプロバイダーの選定
 
 このプロジェクトでは、Polygon MainnetへのアクセスにRPCプロバイダーを使用します。このプロジェクトでは**Alchemy**を使用していますが、Infuraやその他のRPCプロバイダーでも動作します。
 
@@ -116,13 +137,6 @@ Alchemy以外にも、以下のRPCプロバイダーが利用可能です：
 ```env
 RPC_URL=https://polygon-mainnet.g.alchemy.com/v2/YOUR_API_KEY
 ```
-
-## セットアップ
-
-### 前提条件
-
-- Polygon Mainnetへのアクセス権（Infura、Alchemyなど）
-- リレイヤー用の秘密鍵（ガス代を支払うアカウント）
 
 ### 1. リポジトリのクローン
 
